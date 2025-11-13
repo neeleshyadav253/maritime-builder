@@ -1,26 +1,24 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "./Card";
 import { Gauge } from "./Gauge";
 import { Lamp } from "./Lamp";
 import { Toggle } from "./Toggle";
 import { INITIALS, fmt, interpRamp, RUNNING_PARAMS } from "../utils/constants";
 import type { EngineState } from "../types";
-import { TestRunner } from "./TestRunner"; // Add this import
 
 export function EngineSimulator() {
   // Valves & Switches - ALL CLOSED initially
   const [DO32, setDO32] = useState(false); // Fuel valve to engine
   const [DO33, setDO33] = useState(false); // Fill valve to Emergency Gen DO tank
   const [DO44, setDO44] = useState(false); // Drain to storage
-  const [HY31, setHY31] = useState(false); // Hydraulic start valve (momentary)
   const [testMode, setTestMode] = useState(true); // Test Mode ON initially
   const [acbClosed, setAcbClosed] = useState(false);
   const [shorePowerConnected, setShorePowerConnected] = useState(false);
-  const [isTestRunning, setIsTestRunning] = useState(false);
-  const [currentTest, setCurrentTest] = useState<number | null>(null);
-  const testActionQueue = useRef<
-    Array<{ action: string; delay: number; data?: any }>
-  >([]);
+  // const [isTestRunning, setIsTestRunning] = useState(false);
+  // const [currentTest, setCurrentTest] = useState<number | null>(null);
+  // const testActionQueue = useRef<
+  //   Array<{ action: string; delay: number; data?: any }>
+  // >([]);
   const testTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Core Process Variables
   const [batteryV, setBatteryV] = useState(INITIALS.batteryV);
@@ -79,196 +77,196 @@ export function EngineSimulator() {
       }
     };
   }, [DO44]);
-  const handleRunTest = (testCase: number, autoExecute: boolean = true) => {
-    if (!autoExecute) return;
+  // const handleRunTest = (testCase: number, autoExecute: boolean = true) => {
+  //   if (!autoExecute) return;
 
-    resetAll();
-    setIsTestRunning(true);
-    setCurrentTest(testCase);
+  //   resetAll();
+  //   setIsTestRunning(true);
+  //   setCurrentTest(testCase);
 
-    // Clear any existing test queue
-    testActionQueue.current = [];
-    testTimeoutRef.current && clearTimeout(testTimeoutRef.current);
+  //   // Clear any existing test queue
+  //   testActionQueue.current = [];
+  //   testTimeoutRef.current && clearTimeout(testTimeoutRef.current);
 
-    switch (testCase) {
-      case 1:
-        // Test 1: Auto trip and battery drain
-        testActionQueue.current = [
-          { action: "setState", delay: 100, data: { DO32: false } },
-          { action: "startBattery", delay: 500 },
-          { action: "startBattery", delay: 3500 },
-          { action: "startBattery", delay: 6500 },
-          { action: "startBattery", delay: 9500 },
-          { action: "startBattery", delay: 12500 },
-          { action: "completeTest", delay: 15000 },
-        ];
-        break;
+  //   switch (testCase) {
+  //     case 1:
+  //       // Test 1: Auto trip and battery drain
+  //       testActionQueue.current = [
+  //         { action: "setState", delay: 100, data: { DO32: false } },
+  //         { action: "startBattery", delay: 500 },
+  //         { action: "startBattery", delay: 3500 },
+  //         { action: "startBattery", delay: 6500 },
+  //         { action: "startBattery", delay: 9500 },
+  //         { action: "startBattery", delay: 12500 },
+  //         { action: "completeTest", delay: 15000 },
+  //       ];
+  //       break;
 
-      case 2:
-        // Test 2: Normal start with ramp and ACB
-        testActionQueue.current = [
-          { action: "setState", delay: 100, data: { DO32: true } },
-          { action: "startBattery", delay: 500 },
-          { action: "closeACB", delay: 50000 }, // Close ACB at 50s
-          { action: "completeTest", delay: 55000 },
-        ];
-        break;
+  //     case 2:
+  //       // Test 2: Normal start with ramp and ACB
+  //       testActionQueue.current = [
+  //         { action: "setState", delay: 100, data: { DO32: true } },
+  //         { action: "startBattery", delay: 500 },
+  //         { action: "closeACB", delay: 50000 }, // Close ACB at 50s
+  //         { action: "completeTest", delay: 55000 },
+  //       ];
+  //       break;
 
-      case 3:
-        // Test 3: Test Mode OFF failure
-        testActionQueue.current = [
-          {
-            action: "setState",
-            delay: 100,
-            data: { testMode: false, DO32: false },
-          },
-          { action: "startBattery", delay: 500 },
-          { action: "startBattery", delay: 3500 },
-          { action: "startBattery", delay: 6500 },
-          { action: "startBattery", delay: 9500 },
-          { action: "startBattery", delay: 12500 },
-          { action: "completeTest", delay: 15000 },
-        ];
-        break;
+  //     case 3:
+  //       // Test 3: Test Mode OFF failure
+  //       testActionQueue.current = [
+  //         {
+  //           action: "setState",
+  //           delay: 100,
+  //           data: { testMode: false, DO32: false },
+  //         },
+  //         { action: "startBattery", delay: 500 },
+  //         { action: "startBattery", delay: 3500 },
+  //         { action: "startBattery", delay: 6500 },
+  //         { action: "startBattery", delay: 9500 },
+  //         { action: "startBattery", delay: 12500 },
+  //         { action: "completeTest", delay: 15000 },
+  //       ];
+  //       break;
 
-      case 4:
-        // Test 4: Fuel drain with auto-stop
-        testActionQueue.current = [
-          { action: "setState", delay: 100, data: { DO44: true, DO32: true } },
-          { action: "startBattery", delay: 1000 },
-          { action: "completeTest", delay: 60000 }, // Monitor for 60s
-        ];
-        break;
+  //     case 4:
+  //       // Test 4: Fuel drain with auto-stop
+  //       testActionQueue.current = [
+  //         { action: "setState", delay: 100, data: { DO44: true, DO32: true } },
+  //         { action: "startBattery", delay: 1000 },
+  //         { action: "completeTest", delay: 60000 }, // Monitor for 60s
+  //       ];
+  //       break;
 
-      case 5:
-        // Test 5: Hydraulic start with auto-ACB - Enhanced with debugging
-        testActionQueue.current = [
-          {
-            action: "setState",
-            delay: 100,
-            data: { batteryV: 14, DO32: true, hydraulicPressure: 120 },
-          },
-          { action: "debug", delay: 200, message: "Before hydraulic start" },
-          { action: "startHydraulic", delay: 500 },
-          {
-            action: "debug",
-            delay: 1000,
-            message: "After hydraulic start - should see 'starting'",
-          },
-          {
-            action: "debug",
-            delay: 10000,
-            message: "10s mark - ACB should close soon",
-          },
-          {
-            action: "debug",
-            delay: 20000,
-            message: "20s mark - ACB should close any moment",
-          },
-          {
-            action: "debug",
-            delay: 25000,
-            message: "25s mark - checking ACB status",
-          },
-          { action: "forceACBClose", delay: 30000 }, // Fallback: force ACB close if auto didn't work
-          { action: "completeTest", delay: 35000 },
-        ];
-        break;
-    }
+  //     case 5:
+  //       // Test 5: Hydraulic start with auto-ACB - Enhanced with debugging
+  //       testActionQueue.current = [
+  //         {
+  //           action: "setState",
+  //           delay: 100,
+  //           data: { batteryV: 14, DO32: true, hydraulicPressure: 120 },
+  //         },
+  //         { action: "debug", delay: 200, message: "Before hydraulic start" },
+  //         { action: "startHydraulic", delay: 500 },
+  //         {
+  //           action: "debug",
+  //           delay: 1000,
+  //           message: "After hydraulic start - should see 'starting'",
+  //         },
+  //         {
+  //           action: "debug",
+  //           delay: 10000,
+  //           message: "10s mark - ACB should close soon",
+  //         },
+  //         {
+  //           action: "debug",
+  //           delay: 20000,
+  //           message: "20s mark - ACB should close any moment",
+  //         },
+  //         {
+  //           action: "debug",
+  //           delay: 25000,
+  //           message: "25s mark - checking ACB status",
+  //         },
+  //         { action: "forceACBClose", delay: 30000 }, // Fallback: force ACB close if auto didn't work
+  //         { action: "completeTest", delay: 35000 },
+  //       ];
+  //       break;
+  //   }
 
-    executeNextTestAction();
-  };
+  //   executeNextTestAction();
+  // };
 
-  const executeNextTestAction = () => {
-    if (testActionQueue.current.length === 0) {
-      completeTest();
-      return;
-    }
+  // const executeNextTestAction = () => {
+  //   if (testActionQueue.current.length === 0) {
+  //     completeTest();
+  //     return;
+  //   }
 
-    const nextAction = testActionQueue.current.shift();
-    if (!nextAction) return;
+  //   const nextAction = testActionQueue.current.shift();
+  //   if (!nextAction) return;
 
-    testTimeoutRef.current = setTimeout(() => {
-      switch (nextAction.action) {
-        case "setState":
-          if (nextAction.data) {
-            Object.entries(nextAction.data).forEach(([key, value]) => {
-              switch (key) {
-                case "DO32":
-                  setDO32(value as boolean);
-                  break;
-                case "DO44":
-                  setDO44(value as boolean);
-                  break;
-                case "testMode":
-                  setTestMode(value as boolean);
-                  break;
-                case "batteryV":
-                  setBatteryV(value as number);
-                  break;
-                case "hydraulicPressure":
-                  setHydraulicPressure(value as number);
-                  break;
-              }
-            });
-          }
-          break;
+  //   testTimeoutRef.current = setTimeout(() => {
+  //     switch (nextAction.action) {
+  //       case "setState":
+  //         if (nextAction.data) {
+  //           Object.entries(nextAction.data).forEach(([key, value]) => {
+  //             switch (key) {
+  //               case "DO32":
+  //                 setDO32(value as boolean);
+  //                 break;
+  //               case "DO44":
+  //                 setDO44(value as boolean);
+  //                 break;
+  //               case "testMode":
+  //                 setTestMode(value as boolean);
+  //                 break;
+  //               case "batteryV":
+  //                 setBatteryV(value as number);
+  //                 break;
+  //               case "hydraulicPressure":
+  //                 setHydraulicPressure(value as number);
+  //                 break;
+  //             }
+  //           });
+  //         }
+  //         break;
 
-        case "startBattery":
-          startOnBattery();
-          break;
+  //       case "startBattery":
+  //         startOnBattery();
+  //         break;
 
-        case "startHydraulic":
-          startHydraulic(); // Call startHydraulic directly instead of operateHY31
-          break;
+  //       case "startHydraulic":
+  //         startHydraulic(); // Call startHydraulic directly instead of operateHY31
+  //         break;
 
-        case "operateHY31":
-          operateHY31(); // Keep this if needed elsewhere
-          break;
+  //       case "operateHY31":
+  //         operateHY31(); // Keep this if needed elsewhere
+  //         break;
 
-        case "closeACB":
-          closeACB();
-          break;
+  //       case "closeACB":
+  //         closeACB();
+  //         break;
 
-        case "forceACBClose":
-          console.log("🔄 Force-closing ACB as fallback");
-          setAcbClosed(true);
-          break;
+  //       case "forceACBClose":
+  //         console.log("🔄 Force-closing ACB as fallback");
+  //         setAcbClosed(true);
+  //         break;
 
-        case "debug":
-          console.log(`🔍 DEBUG [Test ${currentTest}]:`, nextAction.message);
-          console.log("- Engine State:", engineState);
-          console.log("- ACB Closed:", acbClosed);
-          console.log("- Hydraulic Pressure:", hydraulicPressure);
-          console.log("- DO32:", DO32);
-          console.log("- Voltage:", voltage, "Frequency:", frequency);
-          break;
+  //       case "debug":
+  //         console.log(`🔍 DEBUG [Test ${currentTest}]:`, nextAction.message);
+  //         console.log("- Engine State:", engineState);
+  //         console.log("- ACB Closed:", acbClosed);
+  //         console.log("- Hydraulic Pressure:", hydraulicPressure);
+  //         console.log("- DO32:", DO32);
+  //         console.log("- Voltage:", voltage, "Frequency:", frequency);
+  //         break;
 
-        case "waitForACB":
-          console.log("⏳ Waiting for ACB auto-close...");
-          break;
+  //       case "waitForACB":
+  //         console.log("⏳ Waiting for ACB auto-close...");
+  //         break;
 
-        case "completeTest":
-          completeTest();
-          return;
-      }
+  //       case "completeTest":
+  //         completeTest();
+  //         return;
+  //     }
 
-      executeNextTestAction();
-    }, nextAction.delay);
-  };
+  //     executeNextTestAction();
+  //   }, nextAction.delay);
+  // };
 
-  const completeTest = () => {
-    setIsTestRunning(false);
-    setCurrentTest(null);
-    testActionQueue.current = [];
+  // const completeTest = () => {
+  //   setIsTestRunning(false);
+  //   setCurrentTest(null);
+  //   testActionQueue.current = [];
 
-    // Show completion message
-    setTimeout(() => {
-      alert(
-        `🎉 Test ${currentTest} completed automatically!\n\nCheck the simulator results against expected behavior.`
-      );
-    }, 500);
-  };
+  //   // Show completion message
+  //   setTimeout(() => {
+  //     alert(
+  //       `🎉 Test ${currentTest} completed automatically!\n\nCheck the simulator results against expected behavior.`
+  //     );
+  //   }, 500);
+  // };
 
   // Cleanup on unmount
   useEffect(() => {
@@ -487,8 +485,8 @@ export function EngineSimulator() {
   }
 
   function operateHY31() {
-    setHY31(true);
-    setTimeout(() => setHY31(false), 400); // momentary operation
+    // setHY31(true);
+    // setTimeout(() => setHY31(false), 400); // momentary operation
     startHydraulic();
   }
 
@@ -534,7 +532,7 @@ export function EngineSimulator() {
     setDO32(false);
     setDO33(false);
     setDO44(false);
-    setHY31(false);
+    // setHY31(false);
     setTestMode(true);
     setAcbClosed(false);
     setShorePowerConnected(false);
@@ -573,21 +571,22 @@ export function EngineSimulator() {
         <header className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">
             Maritime Engine Room Simulator — MP120 (Dead Ship)
-            {isTestRunning && (
-              <span className="px-2 py-1 ml-3 text-sm bg-blue-500 rounded">
-                TEST MODE ACTIVE
-              </span>
-            )}
+            {/* {isTestRunning && ( */}
+            {/* <span className="px-2 py-1 ml-3 text-sm bg-blue-500 rounded">
+              TEST MODE ACTIVE
+            </span> */}
+            {/* )} */}
           </h1>
           <div className="flex items-center gap-3">
             <button
               onClick={resetAll}
-              disabled={isTestRunning}
-              className={`rounded-2xl px-4 py-2 text-sm shadow ${
-                isTestRunning
-                  ? "bg-gray-600 cursor-not-allowed"
-                  : "bg-slate-800 hover:bg-slate-700"
-              }`}
+              // disabled={isTestRunning}
+              // className={`rounded-2xl px-4 py-2 text-sm shadow ${
+              //   isTestRunning
+              //     ? "bg-gray-600 cursor-not-allowed"
+              //     : "bg-slate-800 hover:bg-slate-700"
+              // }`}
+              className="px-4 py-2 text-sm shadow rounded-2xl bg-slate-800 hover:bg-slate-700"
             >
               Reset All
             </button>
